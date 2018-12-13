@@ -1,7 +1,5 @@
 package com.wj.base.errorprocess;
 
-import android.util.SparseArray;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,8 +10,8 @@ import java.util.List;
  */
 public class ErrorUtils {
 
-    private HashMap<Integer, IErrorProcess> mErrorProcessesDef = new HashMap<>();//统一Code处理器集合
-    private SparseArray<List<IErrorProcess>> mErrorProcessesSpe = new SparseArray<>();//特殊Code处理器集合
+    private HashMap<String, IErrorProcess> mErrorProcessesDef = new HashMap<>();//统一Code处理器集合
+    private HashMap<String, List<IErrorProcess>> mErrorProcessesSpe = new HashMap<>();//特殊Code处理器集合
     private IErrorProcess mDefaultProcess;//默认处理器
 
     private ErrorUtils(){
@@ -33,8 +31,8 @@ public class ErrorUtils {
         mDefaultProcess = process;
     }
 
-    public synchronized void registerErrorProcessDef(IErrorProcess process, int... errorCodes){
-        for (int errorCode : errorCodes){
+    public synchronized void registerErrorProcessDef(IErrorProcess process, String... errorCodes){
+        for (String errorCode : errorCodes){
             if(process == null){
                 throw new RuntimeException("params process can not be null");
             }
@@ -42,8 +40,8 @@ public class ErrorUtils {
         }
     }
 
-    public synchronized void registerErrorProcessSpe(IErrorProcess process, int... errorCodes){
-        for (int errorCode : errorCodes){
+    public synchronized void registerErrorProcessSpe(IErrorProcess process, String... errorCodes){
+        for (String errorCode : errorCodes){
             if(process == null){
                 throw new RuntimeException("params process can not be null");
             }
@@ -58,12 +56,14 @@ public class ErrorUtils {
 
     public void unregisterErrorProcessSpe(IErrorProcess process){
         for (int i = 0; i < mErrorProcessesSpe.size(); i++){
-            List<IErrorProcess> handlers = mErrorProcessesSpe.valueAt(i);
-            handlers.remove(process);
+            List<IErrorProcess> handlers = mErrorProcessesSpe.get(i);
+            if(handlers != null && handlers.contains(process)){
+                handlers.remove(process);
+            }
         }
     }
 
-    public synchronized void errorProcess(final int errorCode, final String errorMsg){
+    public synchronized void errorProcess(final String errorCode, final String errorMsg){
         List<IErrorProcess> handlers = mErrorProcessesSpe.get(errorCode);
         if(handlers == null){
             if(mErrorProcessesDef.containsKey(errorCode)){
@@ -86,7 +86,7 @@ public class ErrorUtils {
         }
     }
     //error入口
-    public static void error(final int errorCode, final String errorMsg){
+    public static void error(final String errorCode, final String errorMsg){
         ErrorUtils.getInstance().errorProcess(errorCode, errorMsg);
     }
 }

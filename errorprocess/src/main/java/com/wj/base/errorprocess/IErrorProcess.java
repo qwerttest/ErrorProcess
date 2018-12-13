@@ -6,5 +6,5 @@ package com.wj.base.errorprocess;
  */
 
 public interface IErrorProcess {
-    void error(final int errorCode, final String errorMsg);
+    void error(final String errorCode, final String errorMsg);
 }
